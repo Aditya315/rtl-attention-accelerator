@@ -1,0 +1,49 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Fri May 29 08:35:54 2026
+[*]
+[dumpfile] "C:\Users\mritunjoykar\Desktop\attention_rtl\output\attention_waveform.vcd"
+[dumpfile_mtime] "Fri May 29 08:10:48 2026"
+[dumpfile_size] 115878
+[savefile] "C:\Users\mritunjoykar\Desktop\attention_rtl\output\rc_file.gtkw"
+[timestart] 0
+[size] 1136 589
+[pos] -1 10
+*-4.399141 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.tb_rtl_top.
+[treeopen] TOP.tb_rtl_top.dut.
+[treeopen] TOP.tb_rtl_top.dut.u_fsm.
+[sst_width] 197
+[signals_width] 170
+[sst_expanded] 1
+[sst_vpaned_height] 149
+@28
+TOP.tb_rtl_top.clk
+TOP.tb_rtl_top.reset_n
+TOP.tb_rtl_top.start
+@200
+-
+@24
+[color] 2
++{TOP.tb_rtl_top.dut.u_fsm.pstate[2:0]} TOP.tb_rtl_top.dut.u_fsm.pstate[2:0]
+@200
+-
+@28
+[color] 3
+TOP.tb_rtl_top.dut.u_fsm.fetch
+[color] 3
+TOP.tb_rtl_top.dut.u_fsm.exec_start1
+[color] 3
+TOP.tb_rtl_top.dut.u_fsm.exec_start2
+[color] 3
+TOP.tb_rtl_top.dut.u_fsm.exec_start3
+@200
+-
+@28
+[color] 2
+TOP.tb_rtl_top.fsm_done
+[color] 1
+TOP.tb_rtl_top.error
+[pattern_trace] 1
+[pattern_trace] 0
