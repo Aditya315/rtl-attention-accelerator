@@ -9,6 +9,41 @@
 - Output, <b>Attention (Q, K, V) = softmax(QK^T/sqrt(dk)) * V</b>.
 - FSM and Counter controlled states/ computational blocks.
 
+## **Architecture Diagram**
+![Architecture](docs/attention_diagram.svg)
+
+**Figure 1** — Simple attention Architecture.
+
+<big><b>1. block_dataFetch</b></big></br>
+Fetches and stores weight matrix W_{Q,K,V} and tokens X_{Q,K,V}.
+  
+<big><b>2. block_delay</b></big></br>
+Inside real RTL `#delay` is not synthesizable. Hence, this counter block is used to mimic a delay of exec_cycle cycles of any particular state of the FSM. It asserts comp_result after the specified delay.
+
+<big><b>3. block_MultMatStore</b></big></br>
+Fetches two matrices from data fetch and does matrix multiplication. After getting Multiplied matrix, it stores into a buffer/ memory location. This block used parallely 3 times in order to calculate Q, K, V.
+
+<big><b>3. block_ScaledQKT</b></big></br>
+Computes Scaled QK^T, S = QK^T / sqrt(dk) by using `Newton-Raphson method` to find 1 / sqrt(dk).
+
+<big><b>4. block_outputMAC</b></big></br>
+Computes `Attention (Q,K,V) = softmax (QK^T / sqrt(dk) )` by using `Taylor's Series` to find `e^x`.
+
+<big><b>5. block_fsm</b></big></br>
+FSM States, latency, control signals,</br>
+```text
+  FSM_STATES        VALUES        MIN EXEC CYCLE        CONTROL-ed by                     ERRORs If                                   EXECUTES BLOCK
+  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  IDLE                0               1 Clk             start       = 1      Counter overflow                                 block_delay
+  DATA_FETCH          1               1 Clk             fetch       = 1      Counter overflow                                 block_delay and block_dataFetch
+  MATRIX_MULT         2               1 Clk             exec_start1 = 1      Counter overflow or dimension mismatch           block_delay and block_MultMatStore
+  SCALED_ATTEN_SCORE  3               1 Clk             exec_start2 = 1      Counter overflow or dimension mismatch           block_delay and block_ScaledQKT
+  OUTPUT_MAC          4               1 Clk             exec_start3 = 1      Counter overflow or dimension mismatch           block_delay and block_outputMAC
+  RESULT_READY        5               -                                                     N/A
+  ERROR               6               -           error in previous states
+```
+
+
 ## **I/O Files Hierarchy**
 
 ```text
@@ -89,39 +124,20 @@ Timing and configuration values has to be modified through `./rtl/define.sv`:
 `define EXEC_OUTPUT_MAC           1
 ```
 
-## **Architectural Overview**
-<big><b>1. block_dataFetch</b></big></br>
-Fetches and stores weight matrix W_{Q,K,V} and tokens X_{Q,K,V}.
-  
-<big><b>2. block_delay</b></big></br>
-Inside real RTL `#delay` is not synthesizable. Hence, this counter block is used to mimic a delay of exec_cycle cycles of any particular state of the FSM. It asserts comp_result after the specified delay.
+## **Design Constraints and Solutions**
+<big><b>Timing Requirements:</b></big>
+- The matrix MAC operation is computed instantly in combinational modules in simulation. However, in real hardware, combinational logic is not instantaneous and requires finite propagation delay for each operation.
+- The Newton-Raphson and Taylor series approximations of `e^x` also require multiple computational steps. While simulation may produce results within a single clock cycle, in practical implementations this can lead to timing violations if the total propagation delay exceeds the allocated execution cycle of the block fsm states.
 
-<big><b>3. block_MultMatStore</b></big></br>
-Fetches two matrices from data fetch and does matrix multiplication. After getting Multiplied matrix, it stores into a buffer/ memory location. This block used parallely 3 times in a single clock cycle in order to calculate Q, K, V.
+These issues can be solved by choosing proper execution cycles in the `./rtl/define.sv` file.
 
-<big><b>3. block_ScaledQKT</b></big></br>
-Computes Scaled QK^T, S = QK^T / sqrt(dk) by using `Newton-Raphson method` to find 1 / sqrt(dk).
+<big><b>Limited Data-width:</b></big>
+- There is a potential risk of overflow/underflow during intermediate computations such as multiplication, accumulation, and exponential approximation. In this design, up-casting is used where it is needed to handle bit growth. Nevertheless, user has to choose the correct `DATA_WIDTH` in the `./rtl/define.sv` file based on worst possible intermediate growth in matrix elements, particularly in `QK^T` accumulation.
 
-<big><b>4. block_outputMAC</b></big></br>
-Computes `Attention (Q,K,V) = softmax (QK^T / sqrt(dk) )` by using `Taylor's Series` to find `e^x`.
-
-<big><b>5. block_fsm</b></big></br>
-FSM States, latency, control signals,</br>
-```text
-  FSM_STATES        VALUES        MIN EXEC CYCLE        CONTROL-ed by                     ERRORs If                                   EXECUTES BLOCK
-  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  IDLE                0               1 Clk             start       = 1      Counter overflow                                 block_delay
-  DATA_FETCH          1               1 Clk             fetch       = 1      Counter overflow                                 block_delay and block_dataFetch
-  MATRIX_MULT         2               1 Clk             exec_start1 = 1      Counter overflow or dimension mismatch           block_delay and block_MultMatStore
-  SCALED_ATTEN_SCORE  3               1 Clk             exec_start2 = 1      Counter overflow or dimension mismatch           block_delay and block_ScaledQKT
-  OUTPUT_MAC          4               1 Clk             exec_start3 = 1      Counter overflow or dimension mismatch           block_delay and block_outputMAC
-  RESULT_READY        5               -                                                     N/A
-  ERROR               6               -           error in previous states
-```
 
 ## **Output Waveform**
 Used gtkwave to display `./output/attention_waveform.vcd`,
 
 ![Figure 1: Attention mechanism state transition in waveform](output/attention_waveform.png)
 
-**Figure 1** — Attention mechanism state transition in waveform
+**Figure 2** — Attention mechanism state transition in waveform
