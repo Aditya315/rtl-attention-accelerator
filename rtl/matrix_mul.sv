@@ -39,7 +39,7 @@ module matrix_mul # (
             for (int i = 0; i < ROW_A; i ++) begin : mat_A_row
                 for (int j = 0; j < COL_A; j ++) begin : mat_A_col
                     for (int k = 0; k < COL_B; k ++) begin: mat_B_col
-                        mat_AxB [i][k] = mat_AxB [i][k] + ((mat_A [i][j] * mat_B [j][k]) >>> `FRAC_POINT);
+                        mat_AxB [i][k] = mat_AxB [i][k] + (  signed'( (2*DATA_WIDTH)'(mat_A [i][j] * mat_B [j][k]) ) >>> `FRAC_POINT);
                     end // mat_B_col
                 end // mat_A_col
             end // mat_A_row

@@ -33,7 +33,7 @@ module matrix_scale_qkt #(
 
         // Scaling S = QK^T / sqrt(dk)
         foreach (mat_sc[i,j]) begin
-            mat_sc[i][j] = (mat_QKT[i][j] * scale_factor) >>> `FRAC_POINT;
+            mat_sc[i][j] = signed'((2*DATA_WIDTH)'(mat_QKT[i][j] * scale_factor)) >>> `FRAC_POINT;
         end
     end
 

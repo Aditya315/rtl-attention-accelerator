@@ -2,7 +2,7 @@
    Data Size and Matrices dimensions
 --------------------------------------*/
 `define BUS_WIDTH    4                  // exec_cycle counter BUS width, max count = 2^BUS_WIDTH - 1
-`define DATA_WIDTH  32                  // Data BUS width (size of each element in matrices)
+`define DATA_WIDTH  32                  // Data BUS width (size of the largest element in matrices)
 
 `define ROW_XQ       3                  // XQ matrix rows
 `define COL_XQ       4                  // XQ matrix columns
@@ -23,7 +23,7 @@
 `define COL_WV       2                  // WV matrix columns
 
 /*-------------------------------------
-            User defines
+ User Editable: User defines
 -------------------------------------*/
 `define CLK_HALF_PERIOD           5     //  10 unit clock period
 `define FRAC_POINT                8     //  Fixed point scaling to Qm.n, where m is integer bits and n is frac bits
@@ -31,17 +31,27 @@
 `define EXP_SERIES_LN            26     //  Taylor's series for e^r = sum of N (r^n / n!) length
 `define EXP_SERIES_LN2          177     //  ln(2) approx value in Q8.8 format (≈ 0.693 * 2^8 = 177)        
 
-/*------------------------------------
-        FSM State Exec Cycle
-------------------------------------*/
+
+
+/*------------------------------------------------------------------
+ User Editable: FSM State Exec Cycle
+ Descrption   :
+ - max exec_cycle per state supports =  2^BUS_WIDTH - 1
+ - Propagation delay in each state has to be smaller than exec_cycle,
+   otherwise there will be timing violation in real scenerio.
+-------------------------------------------------------------------*/
 `define EXEC_IDLE                 1
 `define EXEC_DATA_FETCH           1
 `define EXEC_MATRIX_MULT          1
 `define EXEC_SCALED_ATTEN_SCORE   1
 `define EXEC_OUTPUT_MAC           1
 
+
+
 /*-------------------------------------
-            FSM States
+ User Uneditable: FSM States
+ Descrption   :
+ - Defiened each states in fsm
 -------------------------------------*/
 `define IDLE                      0
 `define DATA_FETCH                1

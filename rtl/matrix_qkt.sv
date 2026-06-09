@@ -36,7 +36,7 @@ module matrix_qkt # (
             for (int i = 0; i < ROW_Q; i ++) begin : mat_Q_row
                 for (int j = 0; j < COL_Q; j ++) begin : mat_Q_col
                     for (int k = 0; k < ROW_K; k ++) begin: mat_K_col
-                        mat_qkt [i][k] = mat_qkt [i][k] + ((mat_Q [i][j] * mat_K [k][j]) >>> `FRAC_POINT);
+                        mat_qkt [i][k] = mat_qkt [i][k] + ( signed'( (2*DATA_WIDTH)'(mat_Q [i][j] * mat_K [k][j]) ) >>> `FRAC_POINT);
                     end // mat_K_col
                 end // mat_Q_col
             end // mat_Q_row

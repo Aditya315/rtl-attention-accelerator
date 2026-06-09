@@ -56,11 +56,11 @@ module block_fsm # (
     
         begin : NSL
             case(pstate)
-                `IDLE               : nstate = (comp_result &start     & !error4)? `DATA_FETCH         : `IDLE      ;             
-                `DATA_FETCH         : nstate = (comp_result            & !error4)? `MATRIX_MULT        : `DATA_FETCH;
-                `MATRIX_MULT        : nstate = (comp_result & !error1  & !error4)? `SCALED_ATTEN_SCORE : `ERROR     ;
-                `SCALED_ATTEN_SCORE : nstate = (comp_result & !error2  & !error4)? `OUTPUT_MAC         : `ERROR     ;
-                `OUTPUT_MAC         : nstate = (comp_result & !error3  & !error4)? `RESULT_READY       : `ERROR     ;
+                `IDLE               : nstate = (comp_result &start     & !error4)? `DATA_FETCH         : (         error4)? `ERROR : `IDLE               ;             
+                `DATA_FETCH         : nstate = (comp_result            & !error4)? `MATRIX_MULT        : (         error4)? `ERROR : `DATA_FETCH         ;
+                `MATRIX_MULT        : nstate = (comp_result & !error1  & !error4)? `SCALED_ATTEN_SCORE : (error1 | error4)? `ERROR : `MATRIX_MULT        ;
+                `SCALED_ATTEN_SCORE : nstate = (comp_result & !error2  & !error4)? `OUTPUT_MAC         : (error2 | error4)? `ERROR : `SCALED_ATTEN_SCORE ;
+                `OUTPUT_MAC         : nstate = (comp_result & !error3  & !error4)? `RESULT_READY       : (error3 | error4)? `ERROR : `OUTPUT_MAC         ;
                 `RESULT_READY       : nstate = `RESULT_READY;
                 `ERROR              : nstate = `ERROR;
                 default             : nstate = 'bx;
